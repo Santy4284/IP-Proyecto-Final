@@ -10,7 +10,7 @@ class Favourite(models.Model):
     first_seen = models.TextField()
 
     # Asociamos el favorito con el usuario en cuestión.
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favourites')
 
-    class Meta:
-        unique_together = (('user', 'url', 'name', 'status', 'last_location', 'first_seen'),)
+    def __str__(self):
+        return f"{self.name} ({self.user.username})"

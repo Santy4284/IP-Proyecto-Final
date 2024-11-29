@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
 from django.http import JsonResponse
+from django.contrib.auth.forms import UserCreationForm
 
 def index_page(request):
     return render(request, 'index.html')
@@ -48,7 +49,6 @@ def getAllImages(input=None):
     cards = []
     for character in characters:
         cards.append({
-            'id': character['id'],
             'name': character['name'],
             'image': character['image'],
             'status': character['status'],
@@ -74,23 +74,59 @@ def login_user(request):
 
 # Cerrar sesión
 @login_required
-def logout_user(request):
+def exit(request):
     logout(request)
     return redirect('index')
+
+# Manejo de registro de usuarios
+def register_user(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()  # Guarda el nuevo usuario 
+            login(request, user)  # inicia sesión automanicamente
+            print(f"Usuario {user.username} registrado y autenticado.")  # Verificación
+            return redirect('index') #Vuelve al inicio
+        else:
+            print(form.errors)  # Ver los errores de validación
+    else:
+        form = UserCreationForm()
+    return render(request, 'register.html', {'form': form})
+
 
 # Obtener favoritos del usuario
 @login_required
 def getAllFavouritesByUser(request):
-    return list(request.user.favourites.values())  # Esto asume un modelo relacionado con el usuario
+    favourites = list(request.user.favourites.values())  # Lista de favoritos
+    return render(request, 'favourites.html', {'favourites': favourites})
+
 
 # Guardar favorito
+from .models import Favourite 
+from django.contrib import messages
 @login_required
 def saveFavourite(request):
     if request.method == 'POST':
-        image_id = request.POST.get('id')
-        if image_id:
-            request.user.favourites.create(image_id=image_id)  # Modelo de favoritos asociado
-    return redirect('home')
+        # Obtén los datos enviados por el formulario
+        name = request.POST.get('name')
+        image= request.POST.get('image')
+        status = request.POST.get('status')
+        last_location = request.POST.get('last_location')
+        first_seen = request.POST.get('first_seen')
+
+        # Crea o guarda el favorito en la base de datos
+        Favourite.objects.create(
+            user=request.user,  # El usuario actual
+            name=name,
+            image=image,
+            status=status,
+            last_location=last_location,
+            first_seen=first_seen,
+        )
+        messages.success(request, "¡El personaje ha sido añadido a favoritos!")
+        return redirect('home')  # Redirige a la página actual (o donde prefieras)
+
+    return redirect('home')  # Si no es POST, redirige a home
 
 # Eliminar favorito
 @login_required

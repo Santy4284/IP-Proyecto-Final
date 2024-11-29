@@ -25,13 +25,13 @@
                     {% for favourite in favourite_list %}
                     <tr>
                         <td>-</td>
-                        <td><img src="{{ favourite.url }}" alt="" style="max-width: 200px; max-height: 200px;"></td>
+                        <td><img src="{{ favourite.html }}" alt="" style="max-width: 200px; max-height: 200px;"></td>
                         <td>{{ favourite.name }}</td>
                         <td>{{ favourite.status }}</td>
                         <td>{{ favourite.last_location }}</td>
                         <td>{{ favourite.first_seen }}</td>
                         <td>
-                            <form method="post" action="{% url 'borrar-favorito' %}">
+                            <form method="post" action="{% url 'delete_favourite' %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="id" value="{{ favourite.id }}">
                                 <button type="submit" class="btn" style="color:red"><i class="material-icons">&#xE872;</i></button>

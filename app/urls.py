@@ -1,16 +1,14 @@
-from django.contrib import admin
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.index_page, name='index-page'),
-    path('login/', views.index_page, name='login'),
+    path('', views.index_page, name='index'),
     path('home/', views.home, name='home'),
-    path('buscar/', views.search, name='buscar'),
-
-    path('favourites/', views.getAllFavouritesByUser, name='favoritos'),
-    path('favourites/add/', views.saveFavourite, name='agregar-favorito'),
-    path('favourites/delete/', views.deleteFavourite, name='borrar-favorito'),
-
+    path('search/', views.search, name='search'),
+    path('login/', views.login_user, name='login'),
+    path('register/', views.register_user, name='register'),
+    path('favoritos/', views.getAllFavouritesByUser, name='favoritos'),
+    path('save_favourite/', views.saveFavourite, name='save_favourite'),
+    path('delete_favourite/', views.deleteFavourite, name='delete_favourite'),
     path('exit/', views.exit, name='exit'),
 ]
