@@ -15,8 +15,46 @@ def index_page(request):
 # esta función obtiene 2 listados que corresponden a las imágenes de la API y los favoritos del usuario, y los usa para dibujar el correspondiente template.
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 
-def home(request):
-    images = getAllImages()  # Obtén todas las imágenes
+def home(request, page=1):
+     # Llamada a la API de Rick & Morty con el número de página
+    images = getAllImages(page=page)
+
+    # Hacer la solicitud a la API de Rick & Morty para obtener los datos
+    response = requests.get(f"https://rickandmortyapi.com/api/character/?page={page}")
+    data = response.json()
+    info = data.get('info', {})
+
+    # Generamos el rango de páginas con un máximo de 40 páginas
+    total_pages = min(info['pages'], 40)
+
+    # Aquí estamos limitando el rango a un máximo de 3 páginas alrededor de la página actual
+    # Este rango de páginas será de 3 páginas alrededor de la página actual (page)
+    if total_pages <= 3:
+        page_range = range(1, total_pages + 1)
+    else:
+        if page <= 2:
+            page_range = range(1, 4)
+        elif page >= total_pages - 1:
+            page_range = range(total_pages - 2, total_pages + 1)
+        else:
+            page_range = range(page - 1, page + 2)
+
+    return render(request, 'home.html', {
+        'images': images,
+        'favourite_list': [],  # Si tienes favoritos, añade la lógica aquí
+        'info': info,
+        'page_range': page_range,
+        'current_page': page  # Asegúrate de que se pase la página actual
+    })
+
+    # Enviamos los datos a la plantilla
+    return render(request, 'home.html', {
+        'images': images,
+        'favourite_list': [],  # Aquí puedes agregar la lógica para los favoritos si es necesario
+        'info': info,
+        'page_range': page_range,
+        'current_page': page  # Página actual
+    })
     favourite_list = []  # Puedes implementar favoritos si lo necesitas
     if request.user.is_authenticated:
         # Obtén los favoritos del usuario autenticado
@@ -38,7 +76,7 @@ def search(request):
 
 import requests
 
-def getAllImages(input=None):
+def getAllImages(page=1,input=None):
     url = f"https://rickandmortyapi.com/api/character/?name={input}" if input else "https://rickandmortyapi.com/api/character"
     response = requests.get(url)
     if response.status_code != 200:
@@ -124,7 +162,7 @@ def saveFavourite(request):
             first_seen=first_seen,
         )
         messages.success(request, "¡El personaje ha sido añadido a favoritos!")
-        return redirect('home')  # Redirige a la página actual (o donde prefieras)
+        return redirect('home')  # Redirige a la página actual
 
     return redirect('home')  # Si no es POST, redirige a home
 
